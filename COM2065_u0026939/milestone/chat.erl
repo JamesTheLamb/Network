@@ -31,9 +31,9 @@ chat_router(Clients) ->
                     chat_router(Clients);
                 error->
                     gen_tcp:send(Socket, term_to_binary("Registered!")),
-                    chat_router(dict:store(ClientName, {Socket, 0, 0}, Clients))
+                    chat_router(dict:store(ClientName, {Socket, posX, posY}, Clients))
             end;
-        {newpos, ClientName} ->
+        {newpos, {Socket, posX, posY}, ClientName} ->
             case dict:find(ClientName, Clients) of
                 {ok, {Socket, _, _}} ->
                     gen_tcp:send(Socket, term_to_binary("Increased " ++ ClientName ++ " X and Y by 1")),
@@ -70,7 +70,7 @@ client_handler(Socket) ->
             {greet_all, Msg} ->
                 chat_router ! {greet_all, Msg};
             {newpos, ClientName} ->
-                chat_router ! {newpos, ClientName};
+                chat_router ! {newpos, {Socket, posX, posY}, ClientName};
             update_position ->
                 chat_router ! update_position;
             _ ->
