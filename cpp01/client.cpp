@@ -17,12 +17,13 @@
 #define PORT 4300
 #define BUFF_SIZE 1024
 
+//http://www.linuxhowtos.org/C_C++/socket.htm
+
 // initializes the socket
 int init()
 {
-    int sockfd;
-    // TODO: socket
-    //
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    
     return sockfd;
 }
 
@@ -61,7 +62,7 @@ void cleanup(int sockfd)
 int main(int argc, const char *argv[])
 {
     int sockfd = init();
-    establish_conn(sockfd, std::string("scm-88587.local"));
+    establish_conn(sockfd, std::string("localhost"));
     send_msg(std::string("Hello\n"), sockfd);
     std::string s = recv_msg(sockfd);
     std::cout << "final: " << s << std::endl;

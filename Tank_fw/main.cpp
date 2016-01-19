@@ -2,9 +2,40 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    int height = 1000;
+    int width = 1000;
+    sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
+
+    sf::Image image;
+    image.create(1000, 1000, sf::Color::Black);
+
+    bool isBlackPixel = false;
+    sf::Color blackPixel(0,0,0,255);
+    sf::Color whitePixel(255, 255, 255, 255);
+
+    //Loop through each vertical row of the image
+    for (int y = 0; y < 1000; y++)
+    {
+        //then horizontal, setting pixels to black or white in blocks of 8
+        for (int x = 0; x < 1000; x++)
+        {
+            if (isBlackPixel)
+                image.setPixel(x, y, blackPixel);
+            else
+                image.setPixel(x, y, whitePixel);
+            // Every 8th flip colour
+            if (!(x % 50))
+                isBlackPixel = !isBlackPixel;
+        }
+    // Offset again on vertical lines to create a checkerboard effect
+        if(!(y%50))
+        isBlackPixel = !isBlackPixel;
+    }
+
+    sf::Texture texture;
+    texture.loadFromImage(image);
+    sf::Sprite sprite(texture);
+
 
     while (window.isOpen())
     {
@@ -16,7 +47,7 @@ int main()
         }
 
         window.clear();
-        window.draw(shape);
+        window.draw(sprite);
         window.display();
     }
     return 0;
