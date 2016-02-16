@@ -1,53 +1,74 @@
-#include <SFML/Graphics.hpp>
+#include <iostream>
+#include "Function.h"
 
 int main()
 {
+    Function funky;
+
+    enum Direction {Up, Right, Down, Left};
+
     int height = 1000;
     int width = 1000;
     sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
 
-    sf::Image image;
-    image.create(1000, 1000, sf::Color::Black);
+    float temp = 20;
 
-    bool isBlackPixel = false;
-    sf::Color blackPixel(0,0,0,255);
-    sf::Color whitePixel(255, 255, 255, 255);
+    sf::Texture img;
+    if(!img.loadFromFile("tank1.png"))
+        std::cout << "Error, could not load texture" << std::endl;
 
-    //Loop through each vertical row of the image
-    for (int y = 0; y < 1000; y++)
-    {
-        //then horizontal, setting pixels to black or white in blocks of 8
-        for (int x = 0; x < 1000; x++)
-        {
-            if (isBlackPixel)
-                image.setPixel(x, y, blackPixel);
-            else
-                image.setPixel(x, y, whitePixel);
-            // Every 8th flip colour
-            if (!(x % 50))
-                isBlackPixel = !isBlackPixel;
-        }
-    // Offset again on vertical lines to create a checkerboard effect
-        if(!(y%50))
-        isBlackPixel = !isBlackPixel;
-    }
+    sf::Sprite tank;
 
-    sf::Texture texture;
-    texture.loadFromImage(image);
-    sf::Sprite sprite(texture);
+    tank.setTexture(img);
+    tank.setOrigin(tank.getTexture()->getSize().x/2, tank.getTexture()->getSize().y/2);
+    tank.setScale(0.5f, 0.5f);
 
+    sf::Vector2f position(tank.getOrigin().x, tank.getOrigin().y);
+
+    tank.setPosition(position);
 
     while (window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            switch(event.type)
+            {
+            case sf::Event::Closed:
                 window.close();
+                break;
+            case sf::Event::KeyPressed:
+                if(event.key.code == sf::Keyboard::Up)
+                {
+                    position = funky.lerping(position, sf::Vector2f(position.x, position.y+20), temp);
+                    tank.setRotation(-90);
+                }
+                else if(event.key.code == sf::Keyboard::Right)
+                {
+                    position.x += 20;
+                    tank.setRotation(0);
+
+                }
+                else if(event.key.code == sf::Keyboard::Down)
+                {
+                    position.y += 20;
+                    tank.setRotation(90);
+
+                }
+                else if(event.key.code == sf::Keyboard::Left)
+                {
+                    position.x -= 20;
+                    tank.setRotation(180);
+
+                }
+
+                tank.setPosition(position);
+                break;
+            }
         }
 
         window.clear();
-        window.draw(sprite);
+        window.draw(tank);
         window.display();
     }
     return 0;
