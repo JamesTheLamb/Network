@@ -31,7 +31,6 @@ int init()
 void establish_conn(int sockfd, std::string hostname)
 {
     struct sockaddr_in address;
-    // TODO: connect
     struct addrinfo hints, *res, *res0;
     int error;
     const char *cause = NULL;
@@ -55,7 +54,6 @@ int send_msg(std::string msg, int sockfd)
     int n;
     memset(buffer, 0, BUFF_SIZE);
     memcpy(buffer, msg.c_str(), msg.length());
-    // TODO: write
     n = write(sockfd, buffer, msg.length());
     //
     return n;
@@ -66,7 +64,6 @@ std::string recv_msg(int sockfd)
     char buffer[BUFF_SIZE];
     int n;
     memset(buffer, 0, BUFF_SIZE);
-    // TODO: read
     n = read(sockfd, buffer, BUFF_SIZE);
     
     if (n < 0)
@@ -80,7 +77,6 @@ std::string recv_msg(int sockfd)
 
 void cleanup(int sockfd)
 {
-    // TODO: close
     close(sockfd);
     // closesocket
 }
@@ -89,9 +85,15 @@ int main(int argc, const char *argv[])
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("localhost"));
-    send_msg(std::string("Hello\n"), sockfd);
-    std::string s = recv_msg(sockfd);
-    std::cout << "final: " << s << std::endl;
+  
+      std::string s;
+    while(1)
+    {
+      std::cin >> s;
+      send_msg(s, sockfd);
+      s = recv_msg(sockfd);
+      std::cout << s << std::endl;
+    }
     cleanup(sockfd);
     return 0;
 }
