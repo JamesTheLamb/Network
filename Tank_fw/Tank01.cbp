@@ -12,6 +12,7 @@
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
+					<Add option="-std=c++11" />
 					<Add option="-g" />
 					<Add directory="/usr/local/SFML-2.2/include" />
 					<Add directory="include" />
@@ -46,6 +47,8 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="../cpp01/client.cpp" />
+		<Unit filename="../cpp01/client.h" />
 		<Unit filename="include/Function.h" />
 		<Unit filename="include/Player.h" />
 		<Unit filename="main.cpp" />

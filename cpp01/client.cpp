@@ -1,5 +1,6 @@
 #include <iostream>
 #include <string>
+#include <thread>
 //#include <sys/types.h>
 //#include <sys/socket.h>
 //#include <netinet/in.h>
@@ -21,10 +22,17 @@
 //http://www.linuxhowtos.org/C_C++/socket.htm
 
 // initializes the socket
+
+void cleanup(int sockfd)
+{
+    close(sockfd);
+    // closesocket
+}
+
 int init()
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    
+
     return sockfd;
 }
 
@@ -39,8 +47,8 @@ void establish_conn(int sockfd, std::string hostname)
     hints.ai_family = PF_INET;
     hints.ai_socktype = SOCK_STREAM;
     error = getaddrinfo(hostname.c_str(), PORT, &hints, &res);
-    
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) 
+
+    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0)
     {
 	cause = "connect";
 	cleanup(sockfd);
@@ -51,7 +59,7 @@ void establish_conn(int sockfd, std::string hostname)
 int send_msg(std::string msg, int sockfd)
 {
     char buffer[BUFF_SIZE];
-    int n;
+    int n = 0;
     memset(buffer, 0, BUFF_SIZE);
     memcpy(buffer, msg.c_str(), msg.length());
     n = write(sockfd, buffer, msg.length());
@@ -65,35 +73,61 @@ std::string recv_msg(int sockfd)
     int n;
     memset(buffer, 0, BUFF_SIZE);
     n = read(sockfd, buffer, BUFF_SIZE);
-    
+
     if (n < 0)
     {
-	error("Cannot read");
+	//error("Cannot read");
+	std::cout << "ERROR" << std::endl;
 	cleanup(sockfd);
     }
-    // 
+    //
     return std::string(buffer);
 }
 
-void cleanup(int sockfd)
+
+
+void recv_loop(int sockfd)
 {
-    close(sockfd);
-    // closesocket
+    std::string s;
+
+    bool is_true = false;
+  while(!is_true)
+    {
+      //std::cin >> s;
+      //send_msg(s, sockfd);
+      s = recv_msg(sockfd);
+      std::cout << s << std::endl;
+
+      if(s.length() > 1)
+        is_true = true;
+    }
 }
 
-int main(int argc, const char *argv[])
+int update()
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("localhost"));
-  
-      std::string s;
-    while(1)
+
+    client_t c(sockfd);
+    std::thread t(c);
+    std::string s;
+
+    bool n = false;
+
+    while(!n)
     {
-      std::cin >> s;
+      std::getline (std::cin, s);
       send_msg(s, sockfd);
-      s = recv_msg(sockfd);
-      std::cout << s << std::endl;
+
+      if(send_msg(s, sockfd) > 0)
+        n = true;
+
+      //s = recv_msg(sockfd);
+      //std::cout << s << std::endl;
     }
+
+    t.join();
+
     cleanup(sockfd);
     return 0;
 }
