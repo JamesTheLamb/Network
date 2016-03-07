@@ -55,7 +55,8 @@ void establish_conn(int sockfd, std::string hostname)
 	sockfd = -1;
     }
 }
-
+        
+	
 int send_msg(std::string msg, int sockfd)
 {
     char buffer[BUFF_SIZE];
@@ -102,8 +103,16 @@ void recv_loop(int sockfd)
         is_true = true;
     }
 }
-
-int update()
+struct client_t
+        {
+            int & sockfd;
+            client_t(int & _sockfd):sockfd(_sockfd){}
+            void operator()() // overloading ()
+            {
+                recv_loop(sockfd); // needs to be implemented
+            }
+        } /* optional variable list */;
+int main()
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("localhost"));
@@ -124,9 +133,10 @@ int update()
 
       //s = recv_msg(sockfd);
       //std::cout << s << std::endl;
+      t.join();
+
     }
 
-    t.join();
 
     cleanup(sockfd);
     return 0;
