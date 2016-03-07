@@ -12,6 +12,6 @@ clean:erlclean
 	\rm -f *.o client a
 
 client:client.o
-	$(CPP) $< -o client
+	$(CPP) $(CPPFLAGS) $(CXXFLAGS) $< -o client
 
 include erlang.mk

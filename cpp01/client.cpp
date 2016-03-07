@@ -38,22 +38,25 @@ int init()
 
 void establish_conn(int sockfd, std::string hostname)
 {
-    struct sockaddr_in address;
-    struct addrinfo hints, *res, *res0;
-    int error;
-    const char *cause = NULL;
-
+    struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_INET;
+    hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_STREAM;
-    error = getaddrinfo(hostname.c_str(), PORT, &hints, &res);
 
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0)
-    {
-	cause = "connect";
-	cleanup(sockfd);
-	sockfd = -1;
+    int rv = getaddrinfo(hostname.c_str(), PORT, &hints, &res);
+    if (rv != 0) {
+        printf("%s\n", gai_strerror(rv));
+        perror("getaddrinfo");
+        exit(EXIT_FAILURE);
     }
+
+    rv = connect(sockfd, res->ai_addr, res->ai_addrlen);
+    if (rv != 0) {
+        perror("Error on Connect (client side)\n");
+        exit(EXIT_FAILURE);
+    }
+    freeaddrinfo(res);
+    std::cout << "connected" << std::endl;
 }
         
 	
@@ -81,7 +84,23 @@ std::string recv_msg(int sockfd)
 	std::cout << "ERROR" << std::endl;
 	cleanup(sockfd);
     }
-    //
+    /*
+    //struct sockaddr_in address;
+    struct addrinfo hints, *res, *res0;
+    int error;
+    const char *cause = NULL;
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = PF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+    error = getaddrinfo(hostname.c_str(), PORT, &hints, &res);
+
+    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0)
+    {
+	cause = "connect";
+	cleanup(sockfd);
+	sockfd = -1;
+    }*/
     return std::string(buffer);
 }
 
@@ -97,12 +116,13 @@ void recv_loop(int sockfd)
       //std::cin >> s;
       //send_msg(s, sockfd);
       s = recv_msg(sockfd);
-      std::cout << s << std::endl;
+      std::cout << "received: " << s << std::endl;
 
-      if(s.length() > 1)
-        is_true = true;
+      //if(s.length() > 1)
+      //  is_true = true;
     }
 }
+
 struct client_t
         {
             int & sockfd;
@@ -112,30 +132,23 @@ struct client_t
                 recv_loop(sockfd); // needs to be implemented
             }
         } /* optional variable list */;
+	
+	
 int main()
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("localhost"));
 
+    std::string s;
+    std::getline (std::cin, s);
+    send_msg(s, sockfd);
+    //std::endl;
+    
     client_t c(sockfd);
     std::thread t(c);
-    std::string s;
+    
 
-    bool n = false;
-
-    while(!n)
-    {
-      std::getline (std::cin, s);
-      send_msg(s, sockfd);
-
-      if(send_msg(s, sockfd) > 0)
-        n = true;
-
-      //s = recv_msg(sockfd);
-      //std::cout << s << std::endl;
-      t.join();
-
-    }
+    t.join();
 
 
     cleanup(sockfd);
