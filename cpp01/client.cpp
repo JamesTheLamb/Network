@@ -111,15 +111,13 @@ void recv_loop(int sockfd)
     std::string s;
 
     bool is_true = false;
-  while(!is_true)
+    while(!is_true)
     {
-      //std::cin >> s;
-      //send_msg(s, sockfd);
+  
       s = recv_msg(sockfd);
       std::cout << "received: " << s << std::endl;
 
-      //if(s.length() > 1)
-      //  is_true = true;
+   
     }
 }
 
@@ -139,13 +137,18 @@ int main()
     int sockfd = init();
     establish_conn(sockfd, std::string("localhost"));
 
-    std::string s;
-    std::getline (std::cin, s);
-    send_msg(s, sockfd);
-    //std::endl;
     
     client_t c(sockfd);
     std::thread t(c);
+    
+    
+    std::string s;
+    
+    while(s != "quit\n")
+    {
+      std::getline (std::cin, s);
+      send_msg(s, sockfd);
+    }
     
 
     t.join();
