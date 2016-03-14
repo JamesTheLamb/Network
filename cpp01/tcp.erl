@@ -38,10 +38,10 @@ chat_router(Clients) ->
                     chat_router(Clients);
                 error->
                     gen_tcp:send(Socket, <<"Registered!">>),
-                    chat_router(dict:store(ClientName, {Socket, PosX, PosY}, Clients))
+                    chat_router(dict:store(ClientName, {Socket, 0, 0}, Clients))
             end;
             
-        {newpos, {Socket, PosX, PosY}, ClientName} ->
+        {get_pos, {Socket, PosX, PosY}, ClientName} ->
             case dict:find(ClientName, Clients) of
                 {ok, {Socket, _, _}} ->
                     gen_tcp:send(Socket, term_to_binary(ClientName ++ " X: " ++ Socket ++ " Y: " ++ Socket)),
@@ -54,8 +54,9 @@ chat_router(Clients) ->
         update_position ->
             chat_router(Clients);
             
-        {greet_all, Msg} ->
-            F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
+        {greet_all, Sender, Msg} ->
+            %F = fun(ClientName, {SOptionocket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
+            F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Sender/binary, <<" sendt '">>/binary, Msg/binary, <<"'">>/binary>>) end,
             dict:map(F, Clients),
             chat_router(Clients)
             
@@ -68,19 +69,19 @@ chat_router(Clients) ->
 %%%%%%%%%%%%%%%%%%
 client_handler(Socket) ->
     case gen_tcp:recv(Socket, 0) of
-        {ok, Bin} ->p
-            [Cmd|Remainder] = binary:split(Bin, <<":">>),
+        {ok, Bin} ->
+            [Cmd|Remainder] = binary:split(Bin, <<":">>, [global]),
             io:format("Command '~p' received.~n", [Cmd]),
         case Cmd of
 	    <<"reg">> ->
 		[ClientName|_] = Remainder,
                 chat_router ! {register, ClientName, Socket};
             <<"greet_all">> ->
-		[Msg|_] = Remainder,
-                chat_router ! {greet_all, Msg};
+		[Sender,Msg|_] = Remainder,
+                chat_router ! {greet_all, Sender, Msg};
 	    <<"get_position">> ->
-		[ClientName|_] = Remainder,
-                chat_router ! {newpos, {Socket, PosX, PosY}, ClientName};
+		[ClientName,PosX,PosY|_] = Remainder, %% "get_position:james:123:456:"
+                chat_router ! {get_pos, {Socket, PosX, PosY}, ClientName};
 	    <<"update_position">> ->
                 chat_router ! update_position;
             _ ->
