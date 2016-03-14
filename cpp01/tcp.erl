@@ -38,14 +38,14 @@ chat_router(Clients) ->
                     chat_router(Clients);
                 error->
                     gen_tcp:send(Socket, <<"Registered!">>),
-                    chat_router(dict:store(ClientName, {Socket, posX, posY}, Clients))
+                    chat_router(dict:store(ClientName, {Socket, PosX, PosY}, Clients))
             end;
             
-        {newpos, {Socket, posX, posY}, ClientName} ->
+        {newpos, {Socket, PosX, PosY}, ClientName} ->
             case dict:find(ClientName, Clients) of
                 {ok, {Socket, _, _}} ->
                     gen_tcp:send(Socket, term_to_binary(ClientName ++ " X: " ++ Socket ++ " Y: " ++ Socket)),
-                    chat_router(dict:store(ClientName, {Socket, 1, 1}, Clients));
+                    chat_router(dict:store(ClientName, {Socket, PosX, PosY}, Clients));
                 error->
                     io:format("Error!"),
                     chat_router(Clients)
@@ -68,7 +68,7 @@ chat_router(Clients) ->
 %%%%%%%%%%%%%%%%%%
 client_handler(Socket) ->
     case gen_tcp:recv(Socket, 0) of
-        {ok, Bin} ->
+        {ok, Bin} ->p
             [Cmd|Remainder] = binary:split(Bin, <<":">>),
             io:format("Command '~p' received.~n", [Cmd]),
         case Cmd of
@@ -80,7 +80,7 @@ client_handler(Socket) ->
                 chat_router ! {greet_all, Msg};
 	    <<"get_position">> ->
 		[ClientName|_] = Remainder,
-                chat_router ! {newpos, {Socket, posX, posY}, ClientName};
+                chat_router ! {newpos, {Socket, PosX, PosY}, ClientName};
 	    <<"update_position">> ->
                 chat_router ! update_position;
             _ ->
