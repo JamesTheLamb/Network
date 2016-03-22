@@ -2,7 +2,6 @@
 #include <iostream>
 #include "Function.h"
 #include "Player.h"
-#include
 
 int main()
 {
@@ -31,24 +30,24 @@ int main()
             case sf::Event::KeyPressed:
                 if(event.key.code == sf::Keyboard::Up)
                 {
-                    position.y -= 20;
+                    position.y -= 45;
                     player.tank.setRotation(-90);
                 }
                 else if(event.key.code == sf::Keyboard::Right)
                 {
-                    position.x += 20;
+                    position.x += 45;
                     player.tank.setRotation(0);
 
                 }
                 else if(event.key.code == sf::Keyboard::Down)
                 {
-                    position.y += 20;
+                    position.y += 45;
                     player.tank.setRotation(90);
 
                 }
                 else if(event.key.code == sf::Keyboard::Left)
                 {
-                    position.x -= 20;
+                    position.x -= 45;
                     player.tank.setRotation(180);
 
                 }

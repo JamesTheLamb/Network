@@ -1,6 +1,6 @@
 -module(tcp).
 
--export([server/0, chat_router/1, client_handler/1, do_recv/1]).
+-export([server/0, chat_router/1, client_handler/2, do_recv/1]).
 
 server() ->
     {ok, LSock} = gen_tcp:listen(4300, [binary, {packet, 0}, 
@@ -55,7 +55,7 @@ chat_router(Clients) ->
             chat_router(Clients);
             
         {greet_all, Sender, Msg} ->
-            %F = fun(ClientName, {SOptionocket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
+            %F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
             F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Sender/binary, <<" sendt '">>/binary, Msg/binary, <<"'">>/binary>>) end,
             dict:map(F, Clients),
             chat_router(Clients)
@@ -67,7 +67,7 @@ chat_router(Clients) ->
 %%%%%%%%%%%%%%%%%%
 % Client Handler %
 %%%%%%%%%%%%%%%%%%
-client_handler(Socket) ->
+client_handler(Socket, ClientName) ->
     case gen_tcp:recv(Socket, 0) of
         {ok, Bin} ->
             [Cmd|Remainder] = binary:split(Bin, <<":">>, [global]),
@@ -76,9 +76,11 @@ client_handler(Socket) ->
 	    <<"reg">> ->
 		[ClientName|_] = Remainder,
                 chat_router ! {register, ClientName, Socket};
+                %client_handler(Socket, ClientName);
             <<"greet_all">> ->
-		[Sender,Msg|_] = Remainder,
-                chat_router ! {greet_all, Sender, Msg};
+		[Msg|_] = Remainder,
+                chat_router ! {greet_all, ClientName, Msg},
+                client_handler(Socket, ClientName);
 	    <<"get_position">> ->
 		[ClientName,PosX,PosY|_] = Remainder, %% "get_position:james:123:456:"
                 chat_router ! {get_pos, {Socket, PosX, PosY}, ClientName};
@@ -87,7 +89,7 @@ client_handler(Socket) ->
             _ ->
                 io:format("Unsupported command.~n", [])
         end,
-	client_handler(Socket);
+	client_handler(Socket, ClientName);
     {error, Reason} ->
         io:format("Error: ~s!~n", [Reason])
     end.
