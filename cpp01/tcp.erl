@@ -42,22 +42,22 @@ chat_router(Clients) ->
                     chat_router(dict:store(Name, {Socket, 0, 0}, Clients))
             end;
             
-        {get_pos, {Socket, PosX, PosY}, ClientName} ->
-            case dict:find(ClientName, Clients) of
-                {ok, {Socket, _, _}} ->
-                    gen_tcp:send(Socket, term_to_binary(ClientName ++ " X: " ++ Socket ++ " Y: " ++ Socket)),
-                    chat_router(dict:store(ClientName, {Socket, PosX, PosY}, Clients));
-                error->
-                    io:format("Error!"),
-                    chat_router(Clients)
-            end;
-            
         update_position ->
             chat_router(Clients);
             
+        {greet, Addressee, Sender, Msg} ->
+	    case dict:find(Addressee, Clients) of
+ 		{ok, {Socket, _, _}} ->
+		    gen_tcp:send(Socket, <<Sender/binary, <<" sent '">>/binary, Msg/binary, <<"'">>/binary>>),
+		    chat_router(Clients);
+		error ->
+		    io:format("The name isn't correct, please try a valid one."),
+		    chat_router(Clients)
+	    end;
+            
         {greet_all, Sender, Msg} ->
             %F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
-            F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Sender/binary, <<" sendt '">>/binary, Msg/binary, <<"'">>/binary>>) end,
+            F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Sender/binary, <<" sent '">>/binary, Msg/binary, <<"'">>/binary>>) end,
             dict:map(F, Clients),
             chat_router(Clients)
             
@@ -78,13 +78,14 @@ client_handler(Socket, ClientName) ->
 		[Name|_] = Remainder,
                 chat_router ! {register, Name, Socket},
                 client_handler(Socket, Name);
+            <<"greet">> ->
+		[Recipient,Msg|_] = Remainder,
+		chat_router ! {greet, Recipient, ClientName, Msg},
+		client_handler(Socket, ClientName);
             <<"greet_all">> ->
 		[Msg|_] = Remainder,
                 chat_router ! {greet_all, ClientName, Msg},
                 client_handler(Socket, ClientName);
-	    <<"get_position">> ->
-		[ClientName,PosX,PosY|_] = Remainder, %% "get_position:james:123:456:"
-                chat_router ! {get_pos, {Socket, PosX, PosY}, ClientName};
 	    <<"update_position">> ->
                 chat_router ! update_position;
             _ ->

@@ -26,7 +26,6 @@
 void cleanup(int sockfd)
 {
     close(sockfd);
-    // closesocket
 }
 
 int init()
@@ -67,7 +66,6 @@ int send_msg(std::string msg, int sockfd)
     memset(buffer, 0, BUFF_SIZE);
     memcpy(buffer, msg.c_str(), msg.length());
     n = write(sockfd, buffer, msg.length());
-    //
     return n;
 }
 
@@ -80,27 +78,10 @@ std::string recv_msg(int sockfd)
 
     if (n < 0)
     {
-	//error("Cannot read");
 	std::cout << "ERROR" << std::endl;
 	cleanup(sockfd);
     }
-    /*
-    //struct sockaddr_in address;
-    struct addrinfo hints, *res, *res0;
-    int error;
-    const char *cause = NULL;
-
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_INET;
-    hints.ai_socktype = SOCK_STREAM;
-    error = getaddrinfo(hostname.c_str(), PORT, &hints, &res);
-
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0)
-    {
-	cause = "connect";
-	cleanup(sockfd);
-	sockfd = -1;
-    }*/
+   
     return std::string(buffer);
 }
 
