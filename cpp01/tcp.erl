@@ -1,6 +1,6 @@
 -module(tcp).
 
--export([server/0, chat_router/1, client_handler/2, do_recv/1]).
+-export([server/0, chat_router/1, client_handler/2]).
 
 server() ->
     {ok, LSock} = gen_tcp:listen(4300, [binary, {packet, 0}, 
@@ -12,18 +12,18 @@ server() ->
     
 accept_loop(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
-    spawn(tcp, client_handler, [Sock]),
+    spawn(tcp, client_handler, [Sock, 0]),
     accept_loop(LSock).
 
-do_recv(Sock) ->
-    case gen_tcp:recv(Sock, 0) of
-        {ok, B} ->
-	    io:format("Received ~s", [B]),
-	    spawn(tcp, client_handler, [Sock]),
-            do_recv(Sock);
-        {error, Reason} ->
-            io:format("error recv: ~s", [Reason])
-    end.
+%do_recv(Sock) ->
+%    case gen_tcp:recv(Sock, 0) of
+%        {ok, B} ->
+%	    io:format("Received ~s", [B]),
+%	    spawn(tcp, client_handler, [Sock]),
+%            do_recv(Sock);
+%        {error, Reason} ->
+%            io:format("error recv: ~s", [Reason])
+%    end.
     
     
 %%%%%%%%%%%%%%%
@@ -32,13 +32,14 @@ do_recv(Sock) ->
 
 chat_router(Clients) ->
     receive
-        {register, ClientName, Socket} ->
-            case dict:find(ClientName, Clients) of
+        {register, Name, Socket} ->
+            case dict:find(Name, Clients) of
                 {ok,_} ->
+		    gen_tcp:send(Socket, <<"Name already registered, try again with a different name.">>),
                     chat_router(Clients);
                 error->
                     gen_tcp:send(Socket, <<"Registered!">>),
-                    chat_router(dict:store(ClientName, {Socket, 0, 0}, Clients))
+                    chat_router(dict:store(Name, {Socket, 0, 0}, Clients))
             end;
             
         {get_pos, {Socket, PosX, PosY}, ClientName} ->
@@ -74,9 +75,9 @@ client_handler(Socket, ClientName) ->
             io:format("Command '~p' received.~n", [Cmd]),
         case Cmd of
 	    <<"reg">> ->
-		[ClientName|_] = Remainder,
-                chat_router ! {register, ClientName, Socket};
-                %client_handler(Socket, ClientName);
+		[Name|_] = Remainder,
+                chat_router ! {register, Name, Socket},
+                client_handler(Socket, Name);
             <<"greet_all">> ->
 		[Msg|_] = Remainder,
                 chat_router ! {greet_all, ClientName, Msg},
