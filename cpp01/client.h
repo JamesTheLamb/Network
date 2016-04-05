@@ -15,18 +15,18 @@ class Client
         std::string recv_msg(int sockfd);
         void recv_loop(int sockfd);
 
+
         /*struct client_t
         {
             int & sockfd;
             client_t(int & _sockfd):sockfd(_sockfd){}
             void operator()() // overloading ()
             {
-                recv_loop(sockfd); // needs to be implemented
+                Client::recv_loop(sockfd); // needs to be implemented
             }
-        } /* optional variable list */;
+        };*/  //optional variable list */;
 
         void update();
-
 
 
     protected:

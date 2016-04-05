@@ -32,19 +32,19 @@ Client::~Client()
 {
 }
 
-void cleanup(int sockfd)
+void Client::cleanup(int sockfd)
 {
     close(sockfd);
 }
 
-int init()
+int Client::init()
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     return sockfd;
 }
 
-void establish_conn(int sockfd, std::string hostname)
+void Client::establish_conn(int sockfd, std::string hostname)
 {
     struct addrinfo hints, *res;
     memset(&hints, 0, sizeof(hints));
@@ -68,7 +68,7 @@ void establish_conn(int sockfd, std::string hostname)
 }
 
 
-int send_msg(std::string msg, int sockfd)
+int Client::send_msg(std::string msg, int sockfd)
 {
     char buffer[BUFF_SIZE];
     int n = 0;
@@ -78,7 +78,7 @@ int send_msg(std::string msg, int sockfd)
     return n;
 }
 
-std::string recv_msg(int sockfd)
+std::string Client::recv_msg(int sockfd)
 {
     char buffer[BUFF_SIZE];
     int n;
@@ -96,7 +96,7 @@ std::string recv_msg(int sockfd)
 
 
 
-void recv_loop(int sockfd)
+void Client::recv_loop(int sockfd)
 {
     std::string s;
 
@@ -113,16 +113,17 @@ void recv_loop(int sockfd)
 
 struct client_t
         {
+            Client c;
             int & sockfd;
             client_t(int & _sockfd):sockfd(_sockfd){}
             void operator()() // overloading ()
             {
-                recv_loop(sockfd); // needs to be implemented
+                c.recv_loop(sockfd); // needs to be implemented
             }
         } /* optional variable list */;
 
 
-void update()
+void Client::update()
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("152.105.67.116"));

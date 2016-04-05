@@ -1,9 +1,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <thread>
-#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Player.h"
-#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Map.h"
-#include "/home1/scm-studs/p4041543/Documents/cpp01/client.h"
+#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Player.h"
+#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Map.h""
+#include "/home1/scm-studs/p4041543/Downloads/cpp01/client.h"
 
 int main()
 {
@@ -12,6 +12,8 @@ int main()
     sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
 
     Client client;
+
+    client.update();
 
     Player player;
     Map mapping;
