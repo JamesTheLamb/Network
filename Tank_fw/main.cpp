@@ -1,64 +1,22 @@
 #include <SFML/Graphics.hpp>
-#include <iostream>
-#include "Function.h"
-#include "Player.h"
 
 int main()
 {
-    enum Direction {Up, Right, Down, Left};
-
-    int height = 1000;
-    int width = 1000;
-    sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
-
-    Player player;
-
-    sf::Vector2f position(player.tank.getOrigin().x - 45, player.tank.getOrigin().y - 30);
-
-    player.tank.setPosition(position);
+    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
+    sf::CircleShape shape(100.f);
+    shape.setFillColor(sf::Color::Green);
 
     while (window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            switch(event.type)
-            {
-            case sf::Event::Closed:
+            if (event.type == sf::Event::Closed)
                 window.close();
-                break;
-            case sf::Event::KeyPressed:
-                if(event.key.code == sf::Keyboard::Up)
-                {
-                    position.y -= 45;
-                    player.tank.setRotation(-90);
-                }
-                else if(event.key.code == sf::Keyboard::Right)
-                {
-                    position.x += 45;
-                    player.tank.setRotation(0);
-
-                }
-                else if(event.key.code == sf::Keyboard::Down)
-                {
-                    position.y += 45;
-                    player.tank.setRotation(90);
-
-                }
-                else if(event.key.code == sf::Keyboard::Left)
-                {
-                    position.x -= 45;
-                    player.tank.setRotation(180);
-
-                }
-
-                player.tank.setPosition(position);
-                break;
-            }
         }
 
         window.clear();
-        window.draw(player.tank);
+        window.draw(shape);
         window.display();
     }
     return 0;

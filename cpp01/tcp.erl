@@ -42,8 +42,31 @@ chat_router(Clients) ->
                     chat_router(dict:store(Name, {Socket, 0, 0}, Clients))
             end;
             
-        update_position ->
-            chat_router(Clients);
+        {update_position, Direction, ClientName} ->
+	    case dict:find(ClientName, Clients) of
+		{ok, {Socket, PosX, PosY}} ->
+		    gen_tcp:send(Socket, << <<"You have moved ">>/binary, Direction/binary>>),
+		    case Direction of
+			<<"left">> ->
+			    PosX2 = PosX + 20,
+			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
+			<<"right">> ->
+			    PosX2 = PosX - 20,
+			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
+			<<"up">> ->
+			    PosY2 = PosY - 20,
+			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
+			<<"down">> ->
+			    PosY2 = PosY + 20,
+			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
+			_ ->
+			    io:format("Unsupported direction.~n", [])
+		    end;
+		error ->
+		    io:format("Cannot move in this direction, please try again"),
+		    chat_router(Clients)
+	    end;
+
             
         {greet, Addressee, Sender, Msg} ->
 	    case dict:find(Addressee, Clients) of
@@ -87,7 +110,9 @@ client_handler(Socket, ClientName) ->
                 chat_router ! {greet_all, ClientName, Msg},
                 client_handler(Socket, ClientName);
 	    <<"update_position">> ->
-                chat_router ! update_position;
+		[Direction|_] = Remainder,
+                chat_router ! {update_position, Direction, ClientName},
+                client_handler(Socket, ClientName);
             _ ->
                 io:format("Unsupported command.~n", [])
         end,

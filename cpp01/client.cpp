@@ -116,7 +116,7 @@ struct client_t
 int main()
 {
     int sockfd = init();
-    establish_conn(sockfd, std::string("localhost"));
+    establish_conn(sockfd, std::string("152.105.67.116"));
 
     
     client_t c(sockfd);

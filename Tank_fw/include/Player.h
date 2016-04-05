@@ -4,7 +4,6 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
-
 class Player
 {
     public:
@@ -14,10 +13,19 @@ class Player
         sf::Texture img;
         sf::Sprite tank;
 
+        void Movement(sf::Event event);
+
+        void HUD(sf::RenderWindow& window);
+
     protected:
 
     private:
+        sf::Vector2f position;
+        int health = 100;
 
+        int strength = 1;
+        int defense = 1;
+        int evasion = 1;
 
 };
 
