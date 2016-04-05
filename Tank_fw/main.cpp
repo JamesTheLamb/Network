@@ -1,23 +1,47 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
+#include <thread>
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Player.h"
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Map.h"
+#include "/home1/scm-studs/p4041543/Documents/cpp01/client.h"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    int height = 600;
+    int width = 600;
+    sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
+
+    Client client;
+
+    Player player;
+    Map mapping;
 
     while (window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            if (event.type == sf::Event::Closed)
+            switch(event.type)
+            {
+            case sf::Event::Closed:
                 window.close();
+                break;
+            case sf::Event::KeyPressed:
+                player.Movement(event);
+                break;
+            }
+
         }
 
         window.clear();
-        window.draw(shape);
+        mapping.Map_One(window, mapping);
+        window.draw(player.tank);
         window.display();
     }
+
+
+
+
+
     return 0;
 }

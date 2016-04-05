@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <thread>
+#include "client.h"
 //#include <sys/types.h>
 //#include <sys/socket.h>
 //#include <netinet/in.h>
@@ -22,6 +23,14 @@
 //http://www.linuxhowtos.org/C_C++/socket.htm
 
 // initializes the socket
+
+Client::Client()
+{
+}
+
+Client::~Client()
+{
+}
 
 void cleanup(int sockfd)
 {
@@ -57,8 +66,8 @@ void establish_conn(int sockfd, std::string hostname)
     freeaddrinfo(res);
     std::cout << "connected" << std::endl;
 }
-        
-	
+
+
 int send_msg(std::string msg, int sockfd)
 {
     char buffer[BUFF_SIZE];
@@ -81,7 +90,7 @@ std::string recv_msg(int sockfd)
 	std::cout << "ERROR" << std::endl;
 	cleanup(sockfd);
     }
-   
+
     return std::string(buffer);
 }
 
@@ -94,11 +103,11 @@ void recv_loop(int sockfd)
     bool is_true = false;
     while(!is_true)
     {
-  
+
       s = recv_msg(sockfd);
       std::cout << "received: " << s << std::endl;
 
-   
+
     }
 }
 
@@ -111,30 +120,29 @@ struct client_t
                 recv_loop(sockfd); // needs to be implemented
             }
         } /* optional variable list */;
-	
-	
-int main()
+
+
+void update()
 {
     int sockfd = init();
     establish_conn(sockfd, std::string("152.105.67.116"));
 
-    
+
     client_t c(sockfd);
     std::thread t(c);
-    
-    
+
+
     std::string s;
-    
+
     while(s != "quit\n")
     {
       std::getline (std::cin, s);
       send_msg(s, sockfd);
     }
-    
+
 
     t.join();
 
 
     cleanup(sockfd);
-    return 0;
 }

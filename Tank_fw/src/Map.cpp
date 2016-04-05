@@ -1,5 +1,4 @@
-#include "Map.h"
-
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Map.h"
 Map::Map()
 {
     //ctor
@@ -53,14 +52,33 @@ void Map::draw(sf::RenderTarget& target,sf::RenderStates states) const
     target.draw(vertices, states);
 }
 
-void Map::Map_One(sf::RenderWindow& window, Map map_one)
+int Map::Map_One(sf::RenderWindow& window, Map map_one)
 {
     const int level[] =
     {
-        0,0,0,0,0,0,0,0,0,0
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
     };
 
+    if(!map_one.LoadTiles("tiles.png", sf::Vector2u(40,40), level, 15, 15))
+        return -1;
+
     window.draw(map_one);
+
+    return 0;
 }
 
 

@@ -1,4 +1,4 @@
-#include "Player.h"
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Player.h"
 #include <iostream>
 #include <sstream>
 
@@ -32,7 +32,7 @@ void Player::Movement(sf::Event event)
             tank.setRotation(270);
         else
         {
-            position.y -= 20;
+            position.y -= 40;
 
             if(position.y <= 20)
                 position.y = 20;
@@ -45,10 +45,10 @@ void Player::Movement(sf::Event event)
             tank.setRotation(0);
         else
         {
-            position.x += 20;
+            position.x += 40;
 
-            if(position.x >= 480)
-                position.x = 480;
+            if(position.x >= 580)
+                position.x = 580;
         }
 
     }
@@ -58,10 +58,10 @@ void Player::Movement(sf::Event event)
             tank.setRotation(90);
         else
         {
-            position.y += 20;
+            position.y += 40;
 
-            if(position.y >= 480)
-                position.y = 480;
+            if(position.y >= 580)
+                position.y = 580;
 
         }
 
@@ -72,7 +72,7 @@ void Player::Movement(sf::Event event)
             tank.setRotation(180);
         else
         {
-            position.x -= 20;
+            position.x -= 40;
 
             if(position.x <= 20)
                 position.x = 20;

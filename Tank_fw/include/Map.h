@@ -12,7 +12,7 @@ class Map : sf::Drawable, sf::Transformable
 
         bool LoadTiles(const std::string& tile_name, sf::Vector2u tile_size, const int* tiles, unsigned int width, unsigned int height);
 
-        void Map_One(sf::RenderWindow& window, Map map_one);
+        int Map_One(sf::RenderWindow& window, Map map_one);
 
     protected:
     private:

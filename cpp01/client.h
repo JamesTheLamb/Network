@@ -15,7 +15,7 @@ class Client
         std::string recv_msg(int sockfd);
         void recv_loop(int sockfd);
 
-        struct client_t
+        /*struct client_t
         {
             int & sockfd;
             client_t(int & _sockfd):sockfd(_sockfd){}
@@ -25,7 +25,7 @@ class Client
             }
         } /* optional variable list */;
 
-        int update();
+        void update();
 
 
 
