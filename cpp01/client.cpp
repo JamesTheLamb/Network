@@ -2,11 +2,20 @@
 #include <string>
 #include <thread>
 #include "client.h"
-//#include <sys/types.h>
-//#include <sys/socket.h>
-//#include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/ioctl.h>
+#include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
+#include <net/if.h>
+
+#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <thread>
+#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Player.h"
+#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Map.h""
+#include "/home1/scm-studs/p4041543/Documents/cpp01/client.h"
 
 #ifdef __linux__
 #include <stdio.h>
@@ -101,6 +110,9 @@ void Client::recv_loop(int sockfd)
     std::string s;
 
     bool is_true = false;
+
+    std::cout << std::to_string(is_true) << std::endl;
+
     while(!is_true)
     {
 
@@ -125,25 +137,63 @@ struct client_t
 
 void Client::update()
 {
-    int sockfd = init();
-    establish_conn(sockfd, std::string("152.105.67.116"));
+    int height = 600;
+    int width = 600;
+    sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
 
+    Player player;
+    Map mapping;
+
+    sf::Time timer = sf::seconds(1.f);
+
+    int sockfd = init();
+
+    struct ifreq ifr;
+
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    strncpy(ifr.ifr_name, "eth0", IFNAMSIZ-1);
+
+    ioctl(sockfd, SIOCGIFADDR, &ifr);
+
+    establish_conn(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 
     client_t c(sockfd);
     std::thread t(c);
 
-
     std::string s;
 
-    while(s != "quit\n")
+
+    while(window.isOpen())
     {
-      std::getline (std::cin, s);
-      send_msg(s, sockfd);
+        sf::Event event;
+        while (window.pollEvent(event))
+        {
+            switch(event.type)
+            {
+            case sf::Event::Closed:
+                window.close();
+                break;
+            case sf::Event::LostFocus:
+                std::getline (std::cin, s);
+                send_msg(s, sockfd);
+                break;
+            case sf::Event::KeyPressed:
+                player.Movement(event);
+                break;
+            }
+
+        }
+
+        window.clear();
+        mapping.Map_One(window, mapping);
+        window.draw(player.tank);
+        window.display();
     }
 
 
-    t.join();
 
+    t.join();
 
     cleanup(sockfd);
 }
