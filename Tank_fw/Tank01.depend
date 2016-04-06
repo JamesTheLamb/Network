@@ -450,7 +450,7 @@
 
 1459870333 /home1/scm-studs/p4041543/Downloads/cpp01/client.h
 
-1459953600 source:/home1/scm-studs/p4041543/cpp01/client.cpp
+1459954730 source:/home1/scm-studs/p4041543/cpp01/client.cpp
 	<iostream>
 	<string>
 	<thread>
@@ -462,7 +462,6 @@
 	<arpa/inet.h>
 	<netdb.h>
 	<net/if.h>
-	<ifaddrs.h>
 	<SFML/Graphics.hpp>
 	<iostream>
 	<thread>

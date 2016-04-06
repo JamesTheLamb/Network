@@ -9,7 +9,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <net/if.h>
-#include <ifaddrs.h>
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -181,19 +180,6 @@ void Client::update()
 {
     bool threaded = false;
 
-    struct ifaddrs *ifap, *ifa;
-    struct sockaddr_in *sa;
-    char *addr;
-
-    getifaddrs (&ifap);
-    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
-        if (ifa->ifa_addr->sa_family==AF_INET) {
-            sa = (struct sockaddr_in *) ifa->ifa_addr;
-            addr = inet_ntoa(sa->sin_addr);
-        }
-    }
-
-    freeifaddrs(ifap);
 
     int height = 600;
     int width = 600;
@@ -212,9 +198,10 @@ void Client::update()
 
     ioctl(sockfd, SIOCGIFADDR, &ifr);
 
-    establish_conn(sockfd, addr);
+    std::cout << inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr) << std::endl;
 
-    std::cout << addr << std::endl;
+    establish_conn(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+
 
     client_t c(sockfd);
     client_two c2(sockfd);
