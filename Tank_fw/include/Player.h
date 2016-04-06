@@ -13,7 +13,7 @@ class Player
         sf::Texture img;
         sf::Sprite tank;
 
-        void Movement(sf::Event event);
+        std::string Movement(sf::Event event);
 
         void HUD(sf::RenderWindow& window);
 

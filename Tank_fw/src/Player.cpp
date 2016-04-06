@@ -1,4 +1,4 @@
-#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Player.h"
+#include "/home1/scm-studs/p4041543/Tank_fw/include/Player.h"
 #include <iostream>
 #include <sstream>
 
@@ -24,8 +24,9 @@ Player::~Player()
     //dtor
 }
 
-void Player::Movement(sf::Event event)
+std::string Player::Movement(sf::Event event)
 {
+    std::string s = " ";
     if(event.key.code == sf::Keyboard::Up)
     {
         if(tank.getRotation() != 270)
@@ -34,8 +35,11 @@ void Player::Movement(sf::Event event)
         {
             position.y -= 40;
 
-            if(position.y <= 20)
+            if(position.y <= 19)
                 position.y = 20;
+            else
+                s = "up";
+
         }
 
     }
@@ -47,9 +51,12 @@ void Player::Movement(sf::Event event)
         {
             position.x += 40;
 
-            if(position.x >= 580)
+            if(position.x >= 581)
                 position.x = 580;
+            else
+                s = "right";
         }
+
 
     }
     else if(event.key.code == sf::Keyboard::Down)
@@ -60,10 +67,12 @@ void Player::Movement(sf::Event event)
         {
             position.y += 40;
 
-            if(position.y >= 580)
+            if(position.y >= 581)
                 position.y = 580;
-
+            else
+                s = "down";
         }
+
 
     }
     else if(event.key.code == sf::Keyboard::Left)
@@ -74,11 +83,16 @@ void Player::Movement(sf::Event event)
         {
             position.x -= 40;
 
-            if(position.x <= 20)
+            if(position.x <= 19)
                 position.x = 20;
+            else
+                s = "left";
         }
+
+
     }
     tank.setPosition(position);
+    return s;
 
 }
 

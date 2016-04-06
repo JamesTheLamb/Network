@@ -14,6 +14,8 @@ class Client
         int send_msg(std::string msg, int sockfd);
         std::string recv_msg(int sockfd);
         void recv_loop(int sockfd);
+        void recv_looping(int sockfd);
+        void registration(int sockfd);
 
 
         /*struct client_t
@@ -31,6 +33,8 @@ class Client
 
     protected:
     private:
+        bool is_reg = false;
+        int state = 1;
 };
 
 #endif // CLIENT_H

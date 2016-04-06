@@ -14,16 +14,6 @@ accept_loop(LSock) ->
     {ok, Sock} = gen_tcp:accept(LSock),
     spawn(tcp, client_handler, [Sock, 0]),
     accept_loop(LSock).
-
-%do_recv(Sock) ->
-%    case gen_tcp:recv(Sock, 0) of
-%        {ok, B} ->
-%	    io:format("Received ~s", [B]),
-%	    spawn(tcp, client_handler, [Sock]),
-%            do_recv(Sock);
-%        {error, Reason} ->
-%            io:format("error recv: ~s", [Reason])
-%    end.
     
     
 %%%%%%%%%%%%%%%
@@ -32,6 +22,10 @@ accept_loop(LSock) ->
 
 chat_router(Clients) ->
     receive
+	{login, Socket} ->
+	    gen_tcp:send(Socket, <<"Time to register!">>),
+	    chat_router(Clients);
+	    
         {register, Name, Socket} ->
             case dict:find(Name, Clients) of
                 {ok,_} ->
@@ -48,16 +42,21 @@ chat_router(Clients) ->
 		    gen_tcp:send(Socket, << <<"You have moved ">>/binary, Direction/binary>>),
 		    case Direction of
 			<<"left">> ->
-			    PosX2 = PosX + 20,
+			    PosX2 = PosX - 40,
+   			    io:format("~p X:~p Y:~p~n", [ClientName, PosX2, PosY]),
+   			    %%gen_tcp:send(Socket, binary_to_list(term_to_binary(PosX))),
 			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
 			<<"right">> ->
-			    PosX2 = PosX - 20,
+			    PosX2 = PosX + 40,
+			    io:format("~p X:~p Y:~p~n", [ClientName, PosX2, PosY]),
 			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
 			<<"up">> ->
-			    PosY2 = PosY - 20,
+			    PosY2 = PosY - 40,
+			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY2]),
 			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
 			<<"down">> ->
-			    PosY2 = PosY + 20,
+			    PosY2 = PosY + 40,
+			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY2]),
 			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
 			_ ->
 			    io:format("Unsupported direction.~n", [])
@@ -79,7 +78,6 @@ chat_router(Clients) ->
 	    end;
             
         {greet_all, Sender, Msg} ->
-            %F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, term_to_binary({ClientName ++ " sent '" ++ Msg ++ "'"})) end,
             F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Sender/binary, <<" sent '">>/binary, Msg/binary, <<"'">>/binary>>) end,
             dict:map(F, Clients),
             chat_router(Clients)
@@ -97,6 +95,8 @@ client_handler(Socket, ClientName) ->
             [Cmd|Remainder] = binary:split(Bin, <<":">>, [global]),
             io:format("Command '~p' received.~n", [Cmd]),
         case Cmd of
+	    <<"Login">> ->
+		chat_router ! {login, Socket};
 	    <<"reg">> ->
 		[Name|_] = Remainder,
                 chat_router ! {register, Name, Socket},

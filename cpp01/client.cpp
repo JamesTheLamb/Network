@@ -13,9 +13,9 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <thread>
-#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Player.h"
-#include "/home1/scm-studs/p4041543/Downloads/Tank_fw/include/Map.h""
-#include "/home1/scm-studs/p4041543/Documents/cpp01/client.h"
+#include "client.h"
+#include "../Tank_fw/include/Player.h"
+#include "../Tank_fw/include/Map.h"
 
 #ifdef __linux__
 #include <stdio.h>
@@ -100,10 +100,20 @@ std::string Client::recv_msg(int sockfd)
 	cleanup(sockfd);
     }
 
+
     return std::string(buffer);
 }
 
+void Client::registration(int sockfd)
+{
+    std::cout << "Enter name:" << std::endl;
+    std::string s;
 
+    std::cin >> s;
+
+    send_msg("reg:"+s, sockfd);
+
+}
 
 void Client::recv_loop(int sockfd)
 {
@@ -111,40 +121,71 @@ void Client::recv_loop(int sockfd)
 
     bool is_true = false;
 
-    std::cout << std::to_string(is_true) << std::endl;
+    while(!is_true)
+    {
+      s = recv_msg(sockfd);
+      std::cout << "received: " << s << std::endl;
+      if(s != "Registered!")
+      {
+
+        registration(sockfd);
+      }
+      else
+      {
+        is_true = true;
+      }
+
+    }
+}
+
+void Client::recv_looping(int sockfd)
+{
+    std::string s;
+
+    bool is_true = false;
 
     while(!is_true)
     {
-
       s = recv_msg(sockfd);
       std::cout << "received: " << s << std::endl;
-
 
     }
 }
 
 struct client_t
-        {
-            Client c;
-            int & sockfd;
-            client_t(int & _sockfd):sockfd(_sockfd){}
-            void operator()() // overloading ()
-            {
-                c.recv_loop(sockfd); // needs to be implemented
-            }
-        } /* optional variable list */;
+{
+    Client c;
+    int & sockfd;
+    client_t(int & _sockfd):sockfd(_sockfd){}
+    void operator()()
+    {
+        c.recv_loop(sockfd);
+    }
 
+};
+
+struct client_two
+{
+    Client c;
+    int & sockfd;
+    client_two(int & _sockfd):sockfd(_sockfd){}
+
+    void operator()()
+    {
+        c.recv_looping(sockfd);
+    }
+};
 
 void Client::update()
 {
+    bool threaded = false;
+
     int height = 600;
     int width = 600;
     sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
 
     Player player;
     Map mapping;
-
-    sf::Time timer = sf::seconds(1.f);
 
     int sockfd = init();
 
@@ -159,41 +200,87 @@ void Client::update()
     establish_conn(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 
     client_t c(sockfd);
-    std::thread t(c);
+    client_two c2(sockfd);
+    sf::Thread t(c);
+    sf::Thread t2(c2);
+
+    t.launch();
+
 
     std::string s;
-
 
     while(window.isOpen())
     {
         sf::Event event;
         while (window.pollEvent(event))
         {
-            switch(event.type)
+            switch(state)
             {
-            case sf::Event::Closed:
-                window.close();
+            case 0:
+                //if(!threaded)
+                //{
+                 //   threaded = true;
+                 //   t2.launch();
+                //}
+                switch(event.type)
+                {
+                case sf::Event::Closed:
+                    window.close();
+                    break;
+                case sf::Event::KeyPressed:
+                    s = player.Movement(event);
+                    if(s != " ")
+                        send_msg("update_position:"+s, sockfd);
+
+                    if(event.key.code == sf::Keyboard::Return)
+                    {
+                        std::cout << "Type your message in here" << std::endl;
+                        std::string msg;
+                        std::cin >> msg;
+                        send_msg("greet_all:"+msg, sockfd);
+                    }
+                    break;
+                }
                 break;
-            case sf::Event::LostFocus:
-                std::getline (std::cin, s);
-                send_msg(s, sockfd);
-                break;
-            case sf::Event::KeyPressed:
-                player.Movement(event);
+            case 1:
+                switch(event.type)
+                {
+                case sf::Event::Closed:
+                    window.close();
+                    break;
+                case sf::Event::MouseButtonPressed:
+                    if(sf::Mouse::getPosition(window).x > 260 && sf::Mouse::getPosition(window).y > 300 &&
+                        sf::Mouse::getPosition(window).x < 330 && sf::Mouse::getPosition(window).y < 335)
+                    {
+                        send_msg("Login", sockfd);
+                        t.wait();
+                        t.terminate();
+                        state = 0;
+                    }
+
+                    break;
+                }
                 break;
             }
 
         }
 
         window.clear();
-        mapping.Map_One(window, mapping);
-        window.draw(player.tank);
+        if(state == 0)
+        {
+            mapping.Map_One(window, mapping);
+            window.draw(player.tank);
+        }
+        else if(state == 1)
+        {
+            mapping.Title_Screen(window, mapping);
+        }
         window.display();
     }
 
 
 
-    t.join();
+    //t.join();
 
     cleanup(sockfd);
 }

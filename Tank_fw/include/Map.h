@@ -12,6 +12,10 @@ class Map : sf::Drawable, sf::Transformable
 
         bool LoadTiles(const std::string& tile_name, sf::Vector2u tile_size, const int* tiles, unsigned int width, unsigned int height);
 
+        sf::Text Text_Setup(sf::Text text, sf::Font font, std::string str, int char_size, sf::Color color, bool bold, sf::Vector2f pos);
+
+        int Title_Screen(sf::RenderWindow& window, Map title);
+
         int Map_One(sf::RenderWindow& window, Map map_one);
 
     protected:
