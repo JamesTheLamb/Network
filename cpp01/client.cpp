@@ -9,6 +9,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <net/if.h>
+#include <ifaddrs.h>
 
 #include <SFML/Graphics.hpp>
 #include <iostream>
@@ -180,6 +181,20 @@ void Client::update()
 {
     bool threaded = false;
 
+    struct ifaddrs *ifap, *ifa;
+    struct sockaddr_in *sa;
+    char *addr;
+
+    getifaddrs (&ifap);
+    for (ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (ifa->ifa_addr->sa_family==AF_INET) {
+            sa = (struct sockaddr_in *) ifa->ifa_addr;
+            addr = inet_ntoa(sa->sin_addr);
+        }
+    }
+
+    freeifaddrs(ifap);
+
     int height = 600;
     int width = 600;
     sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
@@ -197,7 +212,9 @@ void Client::update()
 
     ioctl(sockfd, SIOCGIFADDR, &ifr);
 
-    establish_conn(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
+    establish_conn(sockfd, addr);
+
+    std::cout << addr << std::endl;
 
     client_t c(sockfd);
     client_two c2(sockfd);
@@ -217,11 +234,11 @@ void Client::update()
             switch(state)
             {
             case 0:
-                //if(!threaded)
-                //{
-                 //   threaded = true;
-                 //   t2.launch();
-                //}
+                if(!threaded)
+                {
+                    threaded = true;
+                    t2.launch();
+                }
                 switch(event.type)
                 {
                 case sf::Event::Closed:
@@ -236,7 +253,8 @@ void Client::update()
                     {
                         std::cout << "Type your message in here" << std::endl;
                         std::string msg;
-                        std::cin >> msg;
+                        std::getline(std::cin, msg);
+
                         send_msg("greet_all:"+msg, sockfd);
                     }
                     break;

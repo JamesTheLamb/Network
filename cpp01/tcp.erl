@@ -71,6 +71,7 @@ chat_router(Clients) ->
 	    case dict:find(Addressee, Clients) of
  		{ok, {Socket, _, _}} ->
 		    gen_tcp:send(Socket, <<Sender/binary, <<" sent '">>/binary, Msg/binary, <<"'">>/binary>>),
+		    io:format("Sent"),
 		    chat_router(Clients);
 		error ->
 		    io:format("The name isn't correct, please try a valid one."),
