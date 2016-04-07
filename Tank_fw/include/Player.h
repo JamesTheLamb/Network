@@ -15,12 +15,13 @@ class Player
 
         std::string Movement(sf::Event event);
 
-        void HUD(sf::RenderWindow& window);
+        void SetPosition(sf::Vector2i pos);
+        void SetPosition(int x, int y);
 
     protected:
 
     private:
-        sf::Vector2f position;
+        sf::Vector2i position;
         int health = 100;
 
         int strength = 1;

@@ -17,24 +17,12 @@ class Client
         void recv_looping(int sockfd);
         void registration(int sockfd);
 
-
-        /*struct client_t
-        {
-            int & sockfd;
-            client_t(int & _sockfd):sockfd(_sockfd){}
-            void operator()() // overloading ()
-            {
-                Client::recv_loop(sockfd); // needs to be implemented
-            }
-        };*/  //optional variable list */;
-
-        void update();
+        void update(int sockfd);
 
 
     protected:
     private:
         bool is_reg = false;
-        int state = 1;
 };
 
 #endif // CLIENT_H

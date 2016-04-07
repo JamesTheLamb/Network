@@ -1,4 +1,4 @@
-#include "/home1/scm-studs/p4041543/Tank_fw/include/Player.h"
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Player.h"
 #include <iostream>
 #include <sstream>
 
@@ -13,9 +13,8 @@ Player::Player()
     tank.setOrigin(tank.getTexture()->getSize().x/2, tank.getTexture()->getSize().y/2);
     tank.setScale(0.2f, 0.2f);
 
-    position = sf::Vector2f(20, 20);
-
-    tank.setPosition(position);
+    tank.setPosition(20, 20);
+    SetPosition(20,20);
 
 }
 
@@ -91,26 +90,19 @@ std::string Player::Movement(sf::Event event)
 
 
     }
-    tank.setPosition(position);
+    SetPosition(position);
+    tank.setPosition(position.x, position.y);
     return s;
 
 }
 
-void Player::HUD(sf::RenderWindow& window)
+void Player::SetPosition(sf::Vector2i pos)
 {
-    sf::Font font;
-    font.loadFromFile("arial.ttf");
+    position = pos;
+}
 
-    sf::Text HP("Health: ", font, 20);
-    HP.setColor(sf::Color(255,0,0,255));
-
-    std::stringstream ss;
-    ss << health;
-    std::string s = ss.str();
-    sf::Text health_(s, font, 20);
-    health_.setColor(sf::Color(255,0,0,255));
-    health_.setPosition(sf::Vector2f(100, 0));
-
-    window.draw(HP);
-    window.draw(health_);
+void Player::SetPosition(int x, int y)
+{
+    position.x = x;
+    position.y = y;
 }

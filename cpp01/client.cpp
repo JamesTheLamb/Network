@@ -106,12 +106,31 @@ std::string Client::recv_msg(int sockfd)
 
 void Client::registration(int sockfd)
 {
-    std::cout << "Enter name:" << std::endl;
     std::string s;
 
-    std::cin >> s;
+    std::cout << "Enter name: ";
 
-    send_msg("reg:"+s, sockfd);
+    std::cin >> s ;
+
+    std::string x;
+    int x_int;
+
+    std::cout << "Enter X between 0 - 14: ";
+
+    std::cin >> x;
+    x_int = std::stoi(x);
+    x_int *= 40;
+
+    std::string y;
+    int y_int;
+
+    std::cout << "Enter Y between 0 - 14: ";
+
+    std::cin >> y;
+    y_int = std::stoi(y);
+    y_int *= 40;
+
+    send_msg("reg:"+s+":"+std::to_string(x_int)+":"+std::to_string(y_int), sockfd);
 
 }
 
@@ -152,44 +171,8 @@ void Client::recv_looping(int sockfd)
     }
 }
 
-struct client_t
+void Client::update(int sockfd)
 {
-    Client c;
-    int & sockfd;
-    client_t(int & _sockfd):sockfd(_sockfd){}
-    void operator()()
-    {
-        c.recv_loop(sockfd);
-    }
-
-};
-
-struct client_two
-{
-    Client c;
-    int & sockfd;
-    client_two(int & _sockfd):sockfd(_sockfd){}
-
-    void operator()()
-    {
-        c.recv_looping(sockfd);
-    }
-};
-
-void Client::update()
-{
-    bool threaded = false;
-
-
-    int height = 600;
-    int width = 600;
-    sf::RenderWindow window(sf::VideoMode(height, width), "SFML works!");
-
-    Player player;
-    Map mapping;
-
-    int sockfd = init();
-
     struct ifreq ifr;
 
     ifr.ifr_addr.sa_family = AF_INET;
@@ -203,89 +186,7 @@ void Client::update()
     establish_conn(sockfd, inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 
 
-    client_t c(sockfd);
-    client_two c2(sockfd);
-    sf::Thread t(c);
-    sf::Thread t2(c2);
-
-    t.launch();
-
-
-    std::string s;
-
-    while(window.isOpen())
-    {
-        sf::Event event;
-        while (window.pollEvent(event))
-        {
-            switch(state)
-            {
-            case 0:
-                if(!threaded)
-                {
-                    threaded = true;
-                    t2.launch();
-                }
-                switch(event.type)
-                {
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-                case sf::Event::KeyPressed:
-                    s = player.Movement(event);
-                    if(s != " ")
-                        send_msg("update_position:"+s, sockfd);
-
-                    if(event.key.code == sf::Keyboard::Return)
-                    {
-                        std::cout << "Type your message in here" << std::endl;
-                        std::string msg;
-                        std::getline(std::cin, msg);
-
-                        send_msg("greet_all:"+msg, sockfd);
-                    }
-                    break;
-                }
-                break;
-            case 1:
-                switch(event.type)
-                {
-                case sf::Event::Closed:
-                    window.close();
-                    break;
-                case sf::Event::MouseButtonPressed:
-                    if(sf::Mouse::getPosition(window).x > 260 && sf::Mouse::getPosition(window).y > 300 &&
-                        sf::Mouse::getPosition(window).x < 330 && sf::Mouse::getPosition(window).y < 335)
-                    {
-                        send_msg("Login", sockfd);
-                        t.wait();
-                        t.terminate();
-                        state = 0;
-                    }
-
-                    break;
-                }
-                break;
-            }
-
-        }
-
-        window.clear();
-        if(state == 0)
-        {
-            mapping.Map_One(window, mapping);
-            window.draw(player.tank);
-        }
-        else if(state == 1)
-        {
-            mapping.Title_Screen(window, mapping);
-        }
-        window.display();
-    }
-
-
-
     //t.join();
 
-    cleanup(sockfd);
+    //cleanup(sockfd);
 }

@@ -26,7 +26,7 @@ chat_router(Clients) ->
 	    gen_tcp:send(Socket, <<"Time to register!">>),
 	    chat_router(Clients);
 	    
-        {register, Name, Socket} ->
+        {register, Name, X, Y, Socket} ->
             case dict:find(Name, Clients) of
                 {ok,_} ->
 		    gen_tcp:send(Socket, <<"Name already registered, try again with a different name.">>),
@@ -44,7 +44,7 @@ chat_router(Clients) ->
 			<<"left">> ->
 			    PosX2 = PosX - 40,
    			    io:format("~p X:~p Y:~p~n", [ClientName, PosX2, PosY]),
-   			    %%gen_tcp:send(Socket, binary_to_list(term_to_binary(PosX))),
+   			    gen_tcp:send(Socket, PosX2),
 			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
 			<<"right">> ->
 			    PosX2 = PosX + 40,
@@ -99,8 +99,8 @@ client_handler(Socket, ClientName) ->
 	    <<"Login">> ->
 		chat_router ! {login, Socket};
 	    <<"reg">> ->
-		[Name|_] = Remainder,
-                chat_router ! {register, Name, Socket},
+		[Name, X, Y|_] = Remainder,
+                chat_router ! {register, Name, X, Y, Socket},
                 client_handler(Socket, Name);
             <<"greet">> ->
 		[Recipient,Msg|_] = Remainder,
