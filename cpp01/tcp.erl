@@ -33,36 +33,48 @@ chat_router(Clients) ->
                     chat_router(Clients);
                 error->
                     gen_tcp:send(Socket, <<"Registered!">>),
-                    chat_router(dict:store(Name, {Socket, 0, 0}, Clients))
+                    chat_router(dict:store(Name, {Socket, <<X/binary>>, Y}, Clients))
             end;
             
         {update_position, Direction, ClientName} ->
+		F = fun(Client, {Socket, _, _}) -> gen_tcp:send(Socket, <<ClientName/binary, <<" moved ">>/binary, Direction/binary>>) end,
+		dict:map(F, Clients),
 	    case dict:find(ClientName, Clients) of
 		{ok, {Socket, PosX, PosY}} ->
-		    gen_tcp:send(Socket, << <<"You have moved ">>/binary, Direction/binary>>),
 		    case Direction of
 			<<"left">> ->
-			    PosX2 = PosX - 40,
-   			    io:format("~p X:~p Y:~p~n", [ClientName, PosX2, PosY]),
-   			    gen_tcp:send(Socket, PosX2),
-			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
+ 			    PosX2 = list_to_integer(binary_to_list(PosX)) - 40,
+ 			    PosX3 = integer_to_list(PosX2),
+ 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX3, PosY]),
+ 			    gen_tcp:send(Socket, << <<"X ">>/binary>>),
+     			    gen_tcp:send(Socket, PosX3),
+			    chat_router(dict:store(ClientName, {Socket, list_to_binary(PosX3), PosY}, Clients));
 			<<"right">> ->
-			    PosX2 = PosX + 40,
-			    io:format("~p X:~p Y:~p~n", [ClientName, PosX2, PosY]),
-			    chat_router(dict:store(ClientName, {Socket, PosX2, PosY}, Clients));
+ 			    PosX2 = list_to_integer(binary_to_list(PosX)) + 40,
+ 			    PosX3 = integer_to_list(PosX2),
+ 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX3, PosY]),
+ 			    gen_tcp:send(Socket, << <<"X ">>/binary>>),
+ 			    gen_tcp:send(Socket, PosX3),
+			    chat_router(dict:store(ClientName, {Socket, list_to_binary(PosX3), PosY}, Clients));
 			<<"up">> ->
-			    PosY2 = PosY - 40,
-			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY2]),
-			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
+			    PosY2 = list_to_integer(binary_to_list(PosY)) - 40,
+ 			    PosY3 = integer_to_list(PosY2),
+ 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY3]),
+ 			    gen_tcp:send(Socket, << <<"Y ">>/binary>>),
+ 			    gen_tcp:send(Socket, PosY3),
+			    chat_router(dict:store(ClientName, {Socket, PosX, list_to_binary(PosY3)}, Clients));
 			<<"down">> ->
-			    PosY2 = PosY + 40,
-			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY2]),
-			    chat_router(dict:store(ClientName, {Socket, PosX, PosY2}, Clients));
+			    PosY2 = list_to_integer(binary_to_list(PosY)) + 40,
+ 			    PosY3 = integer_to_list(PosY2),
+ 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY3]),
+ 			    gen_tcp:send(Socket, << <<"Y ">>/binary>>),
+ 			    gen_tcp:send(Socket, PosY3),
+			    chat_router(dict:store(ClientName, {Socket, PosX, list_to_binary(PosY3)}, Clients));
 			_ ->
 			    io:format("Unsupported direction.~n", [])
 		    end;
 		error ->
-		    io:format("Cannot move in this direction, please try again"),
+		    io:format("Error in moving"),
 		    chat_router(Clients)
 	    end;
 

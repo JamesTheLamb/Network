@@ -4,6 +4,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 
+
 class Player
 {
     public:
@@ -17,6 +18,8 @@ class Player
 
         void SetPosition(sf::Vector2i pos);
         void SetPosition(int x, int y);
+        void SetX(int x);
+        void SetY(int y);
 
     protected:
 

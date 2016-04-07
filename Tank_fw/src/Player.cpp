@@ -34,7 +34,7 @@ std::string Player::Movement(sf::Event event)
         {
             position.y -= 40;
 
-            if(position.y <= 19)
+            if(position.y < 20)
                 position.y = 20;
             else
                 s = "up";
@@ -50,7 +50,7 @@ std::string Player::Movement(sf::Event event)
         {
             position.x += 40;
 
-            if(position.x >= 581)
+            if(position.x > 580)
                 position.x = 580;
             else
                 s = "right";
@@ -66,7 +66,7 @@ std::string Player::Movement(sf::Event event)
         {
             position.y += 40;
 
-            if(position.y >= 581)
+            if(position.y > 580)
                 position.y = 580;
             else
                 s = "down";
@@ -82,7 +82,7 @@ std::string Player::Movement(sf::Event event)
         {
             position.x -= 40;
 
-            if(position.x <= 19)
+            if(position.x < 20)
                 position.x = 20;
             else
                 s = "left";
@@ -105,4 +105,18 @@ void Player::SetPosition(int x, int y)
 {
     position.x = x;
     position.y = y;
+
+    tank.setPosition(position.x, position.y);
+}
+
+void Player::SetX(int x)
+{
+    position.x = x;
+    tank.setPosition(position.x, position.y);
+}
+
+void Player::SetY(int y)
+{
+    position.y = y;
+    tank.setPosition(position.x, position.y);
 }

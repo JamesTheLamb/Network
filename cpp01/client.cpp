@@ -120,6 +120,7 @@ void Client::registration(int sockfd)
     std::cin >> x;
     x_int = std::stoi(x);
     x_int *= 40;
+    x_int -= 20;
 
     std::string y;
     int y_int;
@@ -129,6 +130,7 @@ void Client::registration(int sockfd)
     std::cin >> y;
     y_int = std::stoi(y);
     y_int *= 40;
+    y_int -= 20;
 
     send_msg("reg:"+s+":"+std::to_string(x_int)+":"+std::to_string(y_int), sockfd);
 
@@ -169,6 +171,49 @@ void Client::recv_looping(int sockfd)
       std::cout << "received: " << s << std::endl;
 
     }
+}
+
+void Client::recv_loops(int sockfd, Player p)
+{
+    std::string s;
+
+    bool is_true = false;
+    bool is_x = false;
+    bool is_y = false;
+
+    int x;
+    int y;
+
+    while(!is_true)
+    {
+        s = recv_msg(sockfd);
+        std::cout << "received: " << s << std::endl;
+
+        if(is_y)
+        {
+            x = std::stoi(s);
+            p.SetX(x);
+            is_true = true;
+        }
+        else if(is_x)
+        {
+            y = std::stoi(s);
+            p.SetY(y);
+            is_true = true;
+        }
+
+        if(s == "X")
+        {
+            is_x = true;
+        }
+        else if(s == "Y")
+        {
+            is_y = true;
+        }
+
+    }
+
+    std::cout << "Out" << std::endl;
 }
 
 void Client::update(int sockfd)

@@ -1,6 +1,8 @@
 #ifndef CLIENT_H
 #define CLIENT_H
 
+#include "/home1/scm-studs/p4041543/Documents/Tank_fw/include/Player.h"
+
 
 class Client
 {
@@ -14,6 +16,7 @@ class Client
         int send_msg(std::string msg, int sockfd);
         std::string recv_msg(int sockfd);
         void recv_loop(int sockfd);
+        void recv_loops(int sockfd, Player p);
         void recv_looping(int sockfd);
         void registration(int sockfd);
 

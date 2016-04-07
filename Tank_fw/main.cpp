@@ -29,6 +29,19 @@ struct client_two
     }
 };
 
+struct client_three
+{
+    Client c;
+    Player& p;
+    int & sockfd;
+    client_three(int & _sockfd, Player& _p):sockfd(_sockfd), p(_p){}
+
+    void operator()()
+    {
+        c.recv_loops(sockfd, p);
+    }
+};
+
 int main()
 {
     int state = 1;
@@ -49,9 +62,11 @@ int main()
 
     client_t c(sockfd);
     client_two c2(sockfd);
+    client_three c3(sockfd, player);
 
     sf::Thread t(c);
     sf::Thread t2(c2);
+    sf::Thread t3(c3);
 
     t.launch();
 
@@ -79,7 +94,9 @@ int main()
                 case sf::Event::KeyPressed:
                     s = player.Movement(event);
                     if(s != " ")
+                    {
                         client.send_msg("update_position:"+s, sockfd);
+                    }
 
                     if(event.key.code == sf::Keyboard::Return)
                     {
