@@ -15,10 +15,10 @@ class Client
         void establish_conn(int sockfd, std::string hostname);
         int send_msg(std::string msg, int sockfd);
         std::string recv_msg(int sockfd);
-        void recv_loop(int sockfd);
+        void recv_loop(int sockfd, Player& p);
         void recv_loops(int sockfd, Player p);
         void recv_looping(int sockfd);
-        void registration(int sockfd);
+        std::string registration(int sockfd);
 
         void update(int sockfd);
 

@@ -2,7 +2,7 @@
 #include <iostream>
 #include <sstream>
 
-Player::Player()
+Player::Player(int x, int y)
 {
     //ctor
 
@@ -119,4 +119,36 @@ void Player::SetY(int y)
 {
     position.y = y;
     tank.setPosition(position.x, position.y);
+}
+
+void Player::SetDirection(std::string s)
+{
+    direction = s;
+
+    if(direction == "up")
+        tank.setRotation(270);
+
+    if(direction == "down")
+        tank.setRotation(90);
+
+    if(direction == "right")
+        tank.setRotation(0);
+
+    if(direction == "left")
+        tank.setRotation(180);
+}
+
+std::string Player::GetDirection()
+{
+    return direction;
+}
+
+void Player::SetName(std::string s)
+{
+    name = s;
+}
+
+std::string Player::GetName()
+{
+    return name;
 }

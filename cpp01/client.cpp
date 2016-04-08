@@ -104,7 +104,7 @@ std::string Client::recv_msg(int sockfd)
     return std::string(buffer);
 }
 
-void Client::registration(int sockfd)
+std::string Client::registration(int sockfd)
 {
     std::string s;
 
@@ -115,7 +115,7 @@ void Client::registration(int sockfd)
     std::string x;
     int x_int;
 
-    std::cout << "Enter X between 0 - 14: ";
+    std::cout << "Enter X between 1 - 15: ";
 
     std::cin >> x;
     x_int = std::stoi(x);
@@ -125,7 +125,7 @@ void Client::registration(int sockfd)
     std::string y;
     int y_int;
 
-    std::cout << "Enter Y between 0 - 14: ";
+    std::cout << "Enter Y between 1 - 15: ";
 
     std::cin >> y;
     y_int = std::stoi(y);
@@ -133,12 +133,14 @@ void Client::registration(int sockfd)
     y_int -= 20;
 
     send_msg("reg:"+s+":"+std::to_string(x_int)+":"+std::to_string(y_int), sockfd);
+    return s;
 
 }
 
-void Client::recv_loop(int sockfd)
+void Client::recv_loop(int sockfd, Player& p)
 {
     std::string s;
+    std::string n;
 
     bool is_true = false;
 
@@ -146,10 +148,13 @@ void Client::recv_loop(int sockfd)
     {
       s = recv_msg(sockfd);
       std::cout << "received: " << s << std::endl;
-      if(s != "Registered!")
+
+      if(s.substr(0,3) != n.substr(0,3))
       {
 
-        registration(sockfd);
+        n = registration(sockfd);
+        p.SetName(n);
+
       }
       else
       {
@@ -167,8 +172,13 @@ void Client::recv_looping(int sockfd)
 
     while(!is_true)
     {
-      s = recv_msg(sockfd);
-      std::cout << "received: " << s << std::endl;
+        s = recv_msg(sockfd);
+        std::cout << "received: " << s << std::endl;
+
+        if(s.find("!") == s.length() - 1)
+        {
+            std::cout << "Player!" << std::endl;
+        }
 
     }
 }
@@ -176,6 +186,7 @@ void Client::recv_looping(int sockfd)
 void Client::recv_loops(int sockfd, Player p)
 {
     std::string s;
+    //sf::Mutex mutex;
 
     bool is_true = false;
     bool is_x = false;
@@ -187,19 +198,30 @@ void Client::recv_loops(int sockfd, Player p)
     while(!is_true)
     {
         s = recv_msg(sockfd);
-        std::cout << "received: " << s << std::endl;
+
+        //mutex.lock();
+        //try
+        //{
+            std::cout << "received: " << s << std::endl;
+        //}
+        //catch (std::string e)
+        //{
+        //    mutex.unlock();
+        //    throw e;
+        //}
+        //mutex.unlock();
 
         if(is_y)
         {
             x = std::stoi(s);
             p.SetX(x);
-            is_true = true;
+            return;
         }
         else if(is_x)
         {
             y = std::stoi(s);
             p.SetY(y);
-            is_true = true;
+            return;
         }
 
         if(s == "X")

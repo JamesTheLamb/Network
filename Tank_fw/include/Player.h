@@ -8,7 +8,7 @@
 class Player
 {
     public:
-        Player();
+        Player(int x, int y);
         virtual ~Player();
 
         sf::Texture img;
@@ -21,15 +21,25 @@ class Player
         void SetX(int x);
         void SetY(int y);
 
+        void SetDirection(std::string s);
+        std::string GetDirection();
+
+        void SetName(std::string s);
+        std::string GetName();
+
     protected:
 
     private:
+        std::string name;
+
         sf::Vector2i position;
         int health = 100;
 
         int strength = 1;
         int defense = 1;
         int evasion = 1;
+
+        std::string direction;
 
 };
 

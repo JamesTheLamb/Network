@@ -22,61 +22,33 @@ accept_loop(LSock) ->
 
 chat_router(Clients) ->
     receive
-	{login, Socket} ->
-	    gen_tcp:send(Socket, <<"Time to register!">>),
-	    chat_router(Clients);
+		{login, Socket} ->
+			gen_tcp:send(Socket, <<"Time to register!">>),
+			chat_router(Clients);
+
+		{get_all_player, Socket} ->
+			gen_tcp:send(Socket, integer_to_list(dict:size(Clients))),
+			chat_router(Clients);
 	    
         {register, Name, X, Y, Socket} ->
             case dict:find(Name, Clients) of
                 {ok,_} ->
-		    gen_tcp:send(Socket, <<"Name already registered, try again with a different name.">>),
+		    		gen_tcp:send(Socket, <<"Name already registered, try again with a different name.">>),
                     chat_router(Clients);
                 error->
-                    gen_tcp:send(Socket, <<"Registered!">>),
-                    chat_router(dict:store(Name, {Socket, <<X/binary>>, Y}, Clients))
+					chat_router(dict:store(Name, {Socket, <<X/binary>>, <<Y/binary>>}, Clients))
             end;
+
+		{player, Name} ->
+			F = fun(ClientName, {Socket, _, _}) -> gen_tcp:send(Socket, <<Name/binary, <<" Registered!">>/binary>>) end,
+			dict:map(F, Clients),
+			chat_router(Clients);
+			
             
         {update_position, Direction, ClientName} ->
-		F = fun(Client, {Socket, _, _}) -> gen_tcp:send(Socket, <<ClientName/binary, <<" moved ">>/binary, Direction/binary>>) end,
-		dict:map(F, Clients),
-	    case dict:find(ClientName, Clients) of
-		{ok, {Socket, PosX, PosY}} ->
-		    case Direction of
-			<<"left">> ->
- 			    PosX2 = list_to_integer(binary_to_list(PosX)) - 40,
- 			    PosX3 = integer_to_list(PosX2),
- 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX3, PosY]),
- 			    gen_tcp:send(Socket, << <<"X ">>/binary>>),
-     			    gen_tcp:send(Socket, PosX3),
-			    chat_router(dict:store(ClientName, {Socket, list_to_binary(PosX3), PosY}, Clients));
-			<<"right">> ->
- 			    PosX2 = list_to_integer(binary_to_list(PosX)) + 40,
- 			    PosX3 = integer_to_list(PosX2),
- 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX3, PosY]),
- 			    gen_tcp:send(Socket, << <<"X ">>/binary>>),
- 			    gen_tcp:send(Socket, PosX3),
-			    chat_router(dict:store(ClientName, {Socket, list_to_binary(PosX3), PosY}, Clients));
-			<<"up">> ->
-			    PosY2 = list_to_integer(binary_to_list(PosY)) - 40,
- 			    PosY3 = integer_to_list(PosY2),
- 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY3]),
- 			    gen_tcp:send(Socket, << <<"Y ">>/binary>>),
- 			    gen_tcp:send(Socket, PosY3),
-			    chat_router(dict:store(ClientName, {Socket, PosX, list_to_binary(PosY3)}, Clients));
-			<<"down">> ->
-			    PosY2 = list_to_integer(binary_to_list(PosY)) + 40,
- 			    PosY3 = integer_to_list(PosY2),
- 			    io:format("~p X:~p Y:~p~n", [ClientName, PosX, PosY3]),
- 			    gen_tcp:send(Socket, << <<"Y ">>/binary>>),
- 			    gen_tcp:send(Socket, PosY3),
-			    chat_router(dict:store(ClientName, {Socket, PosX, list_to_binary(PosY3)}, Clients));
-			_ ->
-			    io:format("Unsupported direction.~n", [])
-		    end;
-		error ->
-		    io:format("Error in moving"),
-		    chat_router(Clients)
-	    end;
+			F = fun(Client, {Socket, _, _}) -> gen_tcp:send(Socket, <<ClientName/binary, <<" moved ">>/binary, Direction/binary>>) end,
+			dict:map(F, Clients),
+	   		chat_router(Clients);
 
             
         {greet, Addressee, Sender, Msg} ->
@@ -109,21 +81,25 @@ client_handler(Socket, ClientName) ->
             io:format("Command '~p' received.~n", [Cmd]),
         case Cmd of
 	    <<"Login">> ->
-		chat_router ! {login, Socket};
+				chat_router ! {login, Socket};
+		<<"get_all_players">> ->
+				chat_router ! {get_all_player, Socket},
+				client_handler(Socket, ClientName);
 	    <<"reg">> ->
-		[Name, X, Y|_] = Remainder,
+				[Name, X, Y|_] = Remainder,
                 chat_router ! {register, Name, X, Y, Socket},
+				chat_router ! {player, Name},
                 client_handler(Socket, Name);
             <<"greet">> ->
-		[Recipient,Msg|_] = Remainder,
-		chat_router ! {greet, Recipient, ClientName, Msg},
-		client_handler(Socket, ClientName);
+				[Recipient,Msg|_] = Remainder,
+				chat_router ! {greet, Recipient, ClientName, Msg},
+				client_handler(Socket, ClientName);
             <<"greet_all">> ->
-		[Msg|_] = Remainder,
+				[Msg|_] = Remainder,
                 chat_router ! {greet_all, ClientName, Msg},
                 client_handler(Socket, ClientName);
 	    <<"update_position">> ->
-		[Direction|_] = Remainder,
+				[Direction|_] = Remainder,
                 chat_router ! {update_position, Direction, ClientName},
                 client_handler(Socket, ClientName);
             _ ->
