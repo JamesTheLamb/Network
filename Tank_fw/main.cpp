@@ -76,7 +76,7 @@ int main()
 
     int player_count = 0;
 
-    bool threaded = false;
+    bool threaded = true;
 
     int height = 600;
     int width = 600;
@@ -157,6 +157,13 @@ int main()
                         client.send_msg("greet_all:"+msg, sockfd);
                     }
 
+                    if(event.key.code == sf::Keyboard::Escape)
+                    {
+                        client.send_msg("unregister:"+player[0].GetName(), sockfd);
+                        t2.terminate();
+                        state = 1;
+                    }
+
                     if(event.key.code == sf::Keyboard::G && player_count < 4)
                     {
                         t2.terminate();
@@ -178,6 +185,12 @@ int main()
                 }
                 break;
             case 1:
+                if(threaded)
+                {
+                    t.launch();
+                    threaded = false;
+                }
+
                 switch(event.type)
                 {
                 case sf::Event::Closed:
